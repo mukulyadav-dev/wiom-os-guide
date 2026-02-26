@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiom OS Guide — System Architecture</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a2e;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--text:#e0e0e0;--text-dim:#888;--gold:#ffd700;--border:#2a2a3e}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.15),transparent 70%);top:-100px;right:-200px;animation:pulse 8s ease-in-out infinite}
+.hero::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,170,.1),transparent 70%);bottom:-50px;left:-100px;animation:pulse 6s ease-in-out infinite reverse}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.hero h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:700;letter-spacing:-1px;margin-bottom:16px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.15rem;color:var(--text-dim);max-width:600px;margin:0 auto 32px}
+.hero-badge{display:inline-block;padding:8px 20px;border:1px solid var(--border);border-radius:24px;font-size:.85rem;color:var(--accent2);margin-bottom:24px}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+.scroll-hint svg{width:24px;height:24px;stroke:var(--text-dim);fill:none;stroke-width:2}
+
+/* Sections */
+section{padding:100px 0}
+.section-label{font-size:.75rem;text-transform:uppercase;letter-spacing:3px;color:var(--accent);margin-bottom:8px}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:700;margin-bottom:16px}
+.section-desc{color:var(--text-dim);max-width:650px;margin-bottom:48px;font-size:1.05rem}
+
+/* Tree */
+.tree-wrap{position:relative;padding:40px 0}
+.tree-layer{opacity:0;transform:translateY(30px);transition:all .6s ease}
+.tree-layer.visible{opacity:1;transform:translateY(0)}
+.layer-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:2px;position:relative;transition:border-color .3s}
+.layer-card:hover{border-color:var(--accent)}
+.layer-card::before{content:'';position:absolute;left:50%;top:-24px;width:2px;height:24px;background:var(--border)}
+.tree-layer:first-child .layer-card::before{display:none}
+.layer-num{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:4px}
+.layer-name{font-size:1.15rem;font-weight:600;margin-bottom:6px}
+.layer-desc{color:var(--text-dim);font-size:.9rem;margin-bottom:10px}
+.layer-docs{display:flex;flex-wrap:wrap;gap:6px}
+.doc-tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:.75rem;color:var(--text-dim);transition:all .3s}
+.doc-tag:hover{border-color:var(--accent2);color:var(--accent2)}
+.doc-tag.drafted{border-color:rgba(0,212,170,.3);color:var(--accent2)}
+.doc-tag.not-drafted{border-color:rgba(255,107,107,.2);color:var(--accent3);opacity:.6}
+.override-arrow{text-align:center;padding:8px 0;color:var(--accent);font-size:1.2rem;opacity:.5}
+.drive-link{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;color:var(--accent);margin-top:8px;padding:4px 12px;border:1px solid rgba(108,99,255,.3);border-radius:6px}
+.drive-link:hover{background:rgba(108,99,255,.1);text-decoration:none}
+
+/* Flow */
+.flow-container{position:relative}
+.flow-step{display:flex;align-items:flex-start;gap:20px;margin-bottom:0;position:relative;opacity:0;transform:translateX(-20px);transition:all .5s ease}
+.flow-step.visible{opacity:1;transform:translateX(0)}
+.flow-num{width:48px;height:48px;min-width:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;border:2px solid var(--border);color:var(--text-dim);transition:all .5s;position:relative;z-index:1;background:var(--bg)}
+.flow-step.active .flow-num{border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 20px rgba(0,212,170,.2)}
+.flow-body{flex:1;padding:8px 0 40px}
+.flow-body h3{font-size:1.05rem;margin-bottom:4px}
+.flow-body p{color:var(--text-dim);font-size:.9rem}
+.flow-connector{position:absolute;left:23px;top:48px;width:2px;bottom:0;background:var(--border)}
+.flow-step:last-child .flow-connector{display:none}
+.flow-branch{margin:12px 0 0 0;padding:12px 16px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:.85rem}
+.flow-branch.yes{border-left-color:var(--accent2)}
+.flow-branch.no{border-left-color:var(--accent3)}
+.flow-branch-label{font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+
+/* Leverage Points */
+.lp-grid{display:grid;gap:8px}
+.lp-item{display:grid;grid-template-columns:50px 1fr 200px;align-items:center;padding:14px 20px;border-radius:8px;background:var(--surface);border:1px solid var(--border);opacity:0;transform:translateY(10px);transition:all .4s ease}
+.lp-item.visible{opacity:1;transform:translateY(0)}
+.lp-item.highlighted{border-color:var(--accent);background:rgba(108,99,255,.05)}
+.lp-level{font-weight:700;color:var(--text-dim);font-size:.9rem}
+.lp-item.highlighted .lp-level{color:var(--accent)}
+.lp-name{font-size:.9rem}
+.lp-wiom{font-size:.8rem;color:var(--accent2);text-align:right}
+.lp-item:not(.highlighted) .lp-wiom{color:var(--text-dim);opacity:.4}
+
+/* Flywheel */
+.flywheel{display:flex;flex-wrap:wrap;justify-content:center;gap:0;position:relative;padding:40px 0}
+.fw-step{width:200px;text-align:center;padding:24px 16px;position:relative;opacity:0;transform:scale(.9);transition:all .5s ease}
+.fw-step.visible{opacity:1;transform:scale(1)}
+.fw-icon{font-size:2rem;margin-bottom:8px}
+.fw-label{font-weight:600;font-size:.95rem;margin-bottom:4px}
+.fw-desc{color:var(--text-dim);font-size:.8rem}
+.fw-arrow{display:flex;align-items:center;justify-content:center;width:40px;color:var(--accent);font-size:1.5rem;opacity:0;transition:all .5s .3s}
+.fw-arrow.visible{opacity:.5}
+
+/* Doc Library */
+.doc-grid{display:grid;gap:12px}
+.doc-row{display:grid;grid-template-columns:80px 1fr auto;align-items:center;padding:14px 20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;gap:16px;transition:border-color .3s}
+.doc-row:hover{border-color:var(--accent)}
+.doc-id{font-weight:700;font-size:.85rem;color:var(--accent)}
+.doc-name{font-size:.9rem}
+.doc-status{font-size:.75rem;padding:4px 10px;border-radius:12px;font-weight:600}
+.doc-status.live{background:rgba(0,212,170,.1);color:var(--accent2)}
+.doc-status.config{background:rgba(108,99,255,.1);color:var(--accent)}
+.doc-status.pending{background:rgba(255,107,107,.1);color:var(--accent3)}
+
+/* Footer */
+footer{padding:60px 0 40px;border-top:1px solid var(--border);text-align:center;color:var(--text-dim);font-size:.85rem}
+footer a{color:var(--accent2)}
+
+/* Responsive */
+@media(max-width:768px){
+  .lp-item{grid-template-columns:40px 1fr;gap:8px}
+  .lp-wiom{grid-column:1/-1;text-align:left;margin-top:4px}
+  .doc-row{grid-template-columns:1fr;gap:8px}
+  .doc-id{font-size:.8rem}
+  .fw-arrow{transform:rotate(90deg);width:auto;height:30px}
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">CSP Operating System Reference</div>
+    <h1>Wiom <span>OS Guide</span></h1>
+    <p>A single source of truth for all partner-side operations — powered by a 6-layer authority hierarchy, on-demand document retrieval, and an automated feedback flywheel.</p>
+    <p style="font-size:.9rem;color:var(--text-dim)">Built for Wiom employees. Accessible via Slack.</p>
+  </div>
+  <div class="scroll-hint">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+<!-- 6-Layer Hierarchy -->
+<section id="hierarchy">
+  <div class="container">
+    <div class="section-label">Knowledge Architecture</div>
+    <h2 class="section-title">6-Layer Authority Hierarchy</h2>
+    <p class="section-desc">Every answer is grounded in a strict authority chain. Higher layers always override lower layers. A primitive always overrides an OS document. An OS document always overrides operational convenience.</p>
+
+    <div class="tree-wrap">
+
+      <div class="tree-layer" data-delay="0">
+        <div class="layer-card" style="border-left:4px solid #ff6b6b">
+          <div class="layer-num">Layer 1 — Root Context (Immutable)</div>
+          <div class="layer-name">Founding Vision & Strategy</div>
+          <div class="layer-desc">Why Wiom exists. The Rs.10 promise. 50 crore Indians by 2030. Model truths that cannot change without a fundamental reset.</div>
+          <div class="layer-docs">
+            <span class="doc-tag">L1.1 Vision to Strategy</span>
+            <span class="doc-tag">L1.2 Preamble</span>
+            <span class="doc-tag">L1.3 Doctrines</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1-GVbHbCVMesYexz-Z1FtIdwRZbmHEpFf" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+      <div class="override-arrow">▼ overrides</div>
+
+      <div class="tree-layer" data-delay="100">
+        <div class="layer-card" style="border-left:4px solid #ff9f43">
+          <div class="layer-num">Layer 2 — System Reset</div>
+          <div class="layer-name">Push to Pull — Philosophical Foundation</div>
+          <div class="layer-desc">Irreversible shift from sales-driven to system-led operations. Donella Meadows' 12 leverage points applied. Slope > height. 30-day litmus test.</div>
+          <div class="layer-docs">
+            <span class="doc-tag">L2.1 Systems Thinking Leverage Points</span>
+            <span class="doc-tag">L2.2 Push to Pull Context</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1M1EHif_mpnfAM_qbvuJTPj_ci9rK4He8" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+      <div class="override-arrow">▼ overrides</div>
+
+      <div class="tree-layer" data-delay="200">
+        <div class="layer-card" style="border-left:4px solid #ffd700">
+          <div class="layer-num">Layer 3 — Partner Understanding</div>
+          <div class="layer-name">CSP Context, Primitives & Guards</div>
+          <div class="layer-desc">11 locked primitives (P1–P11). 10 binary guards (F1–F4, E1–E3, S1–S3). Partner is a system component, not a user. JTBD framework from 22 LCO interviews.</div>
+          <div class="layer-docs">
+            <span class="doc-tag">L3.1 Partner 101 JTBD</span>
+            <span class="doc-tag">L3.2 Wiom Model Context</span>
+            <span class="doc-tag">L3.3 Partner as System Component</span>
+            <span class="doc-tag">L3.4 Primitives Framework</span>
+            <span class="doc-tag">L3.5 Primitives Locked</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1d84vK_NMYgkr3sTuxHBhEVB-mGuR6yvM" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+      <div class="override-arrow">▼ overrides</div>
+
+      <div class="tree-layer" data-delay="300">
+        <div class="layer-card" style="border-left:4px solid #00d4aa">
+          <div class="layer-num">Layer 4 — Architecture</div>
+          <div class="layer-name">OS Structure, Clusters & Template</div>
+          <div class="layer-desc">20 Operating Systems across 4 clusters. OSTF v1.0 mandatory 12-section template. Governance rule: "If readiness is unclear, we do not act."</div>
+          <div class="layer-docs">
+            <span class="doc-tag">L4.1 Introduction to OS</span>
+            <span class="doc-tag">L4.2 Clusters</span>
+            <span class="doc-tag">L4.3 OSTF Template v1</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1jcATImBtK2matjYHmG60T6ZKVtEgERgh" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+      <div class="override-arrow">▼ overrides</div>
+
+      <div class="tree-layer" data-delay="400">
+        <div class="layer-card" style="border-left:4px solid #6c63ff">
+          <div class="layer-num">Layer 5 — Operating Systems (Versioned)</div>
+          <div class="layer-name">Implementation — 2 Drafted, 18 Pending</div>
+          <div class="layer-desc">Formal OS documents that encode decisions as deterministic code. Where an OS exists, the bot answers directly. Where it doesn't, it derives from layers above.</div>
+          <div class="layer-docs">
+            <span class="doc-tag drafted">L5.05 Customer Continuity Support Layer v1 ✓</span>
+            <span class="doc-tag drafted">L5.17 Exit OS v1 ✓</span>
+            <span class="doc-tag not-drafted">L5.01–L5.20 (18 pending)</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1TnwTlO8SCHmUSU154TwDHjLfefbUK1rx" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+      <div class="override-arrow">▼ overrides</div>
+
+      <div class="tree-layer" data-delay="500">
+        <div class="layer-card" style="border-left:4px solid #888">
+          <div class="layer-num">Layer 6 — Configuration</div>
+          <div class="layer-name">System Prompt & Feedback Workflow</div>
+          <div class="layer-desc">Instructions that tell the AI how to use all layers above. Response format, decision logic, feedback triggers, language rules.</div>
+          <div class="layer-docs">
+            <span class="doc-tag">L6.1 System Prompt v1</span>
+            <span class="doc-tag">L6.2 Slack Feedback Workflow v1</span>
+          </div>
+          <a class="drive-link" href="https://drive.google.com/drive/folders/1PACy_nnNiBbT6IaMnLT27mPS9Gr_a1zC" target="_blank">Open in Drive ↗</a>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center;margin-top:24px"><a class="drive-link" href="https://drive.google.com/drive/folders/1xRS5fj5QFIB_ZRYZkJZlIoS8G0Af1fSK" target="_blank" style="font-size:.9rem;padding:8px 20px">Browse All Documents on Google Drive ↗</a></p>
+  </div>
+</section>
+
+<!-- Question Answering Flow -->
+<section id="flow" style="background:var(--surface)">
+  <div class="container">
+    <div class="section-label">Decision Engine</div>
+    <h2 class="section-title">How Questions Get Answered</h2>
+    <p class="section-desc">When an employee asks a question on Slack, the bot doesn't keyword-search through documents. It reasons through the authority chain, fetching only what it needs.</p>
+
+    <div class="flow-container">
+
+      <div class="flow-step" data-delay="0">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <h3>Employee Asks a Question</h3>
+          <p>Via DM or @mention on Slack. Example: "A partner in Indore is approaching customers directly and offering them personal deals. What do we do?"</p>
+        </div>
+        <div class="flow-connector"></div>
+      </div>
+
+      <div class="flow-step" data-delay="100">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <h3>Identify the OS Domain</h3>
+          <p>The bot classifies: which of the 20 Operating Systems does this fall under? → Exit OS (L5.17) + Enforcement & FPV OS (L5.12).</p>
+        </div>
+        <div class="flow-connector"></div>
+      </div>
+
+      <div class="flow-step" data-delay="200">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <h3>Check: Does a Formal OS Exist?</h3>
+          <p>The bot checks whether an L5.* document has been drafted for this domain.</p>
+          <div class="flow-branch yes">
+            <div class="flow-branch-label" style="color:var(--accent2)">Yes — OS exists (e.g., L5.17 Exit OS)</div>
+            Fetch the specific document via <code>lookup_document</code> tool. Answer directly from it, citing sections, state IDs, lever IDs, and playbooks.
+          </div>
+          <div class="flow-branch no" style="margin-top:8px">
+            <div class="flow-branch-label" style="color:var(--accent3)">No — OS not yet drafted (e.g., L5.12 Enforcement)</div>
+            Derive guidance by traversing the authority chain top-down: primitives (L3.5) → guards (L3.4) → cluster rules (L4.2) → OSTF template (L4.3). Clearly flag the answer as derived.
+          </div>
+        </div>
+        <div class="flow-connector"></div>
+      </div>
+
+      <div class="flow-step" data-delay="300">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <h3>Generate Response (Max 20 Lines)</h3>
+          <p>Lead with the answer (5–7 lines), then list immediate actions (5–8 bullets). Offer "reply 'details' for full breakdown." Concise, actionable, Slack-native.</p>
+        </div>
+        <div class="flow-connector"></div>
+      </div>
+
+      <div class="flow-step" data-delay="400">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <h3>Check Feedback Triggers</h3>
+          <p>The bot evaluates 5 trigger conditions. If any fire, it auto-posts structured feedback to #os-feedback on Slack.</p>
+          <div class="flow-branch" style="border-left-color:var(--gold);margin-top:12px">
+            <div class="flow-branch-label" style="color:var(--gold)">5 Feedback Triggers</div>
+            <strong>T1</strong> Employee challenges the answer<br>
+            <strong>T2</strong> Genuine edge case — primitives don't clearly resolve<br>
+            <strong>T3</strong> Employee explicitly asks to escalate<br>
+            <strong>T4</strong> Bot's confidence is low<br>
+            <strong>T5</strong> HIGH-STAKES — B2 termination, FPV, routing freeze, access revocation (auto-flag, no prompt needed)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Systems Thinking Leverage Points -->
+<section id="leverage">
+  <div class="container">
+    <div class="section-label">Design Principles</div>
+    <h2 class="section-title">Systems Thinking — Where We Intervene</h2>
+    <p class="section-desc">The Wiom OS architecture is designed using Donella Meadows' 12 Leverage Points framework. Instead of operating at low-leverage parameter tweaks (Level 12), we intervene at the highest leverage points: paradigms, goals, rules, and information flows.</p>
+
+    <div class="lp-grid">
+      <div class="lp-item highlighted" data-delay="0">
+        <div class="lp-level">1</div>
+        <div class="lp-name"><strong>The power to transcend paradigms</strong></div>
+        <div class="lp-wiom">→ The feedback flywheel lets the OS evolve its own paradigm over time</div>
+      </div>
+      <div class="lp-item highlighted" data-delay="50">
+        <div class="lp-level">2</div>
+        <div class="lp-name"><strong>The mindset or paradigm</strong> out of which the system arises</div>
+        <div class="lp-wiom">→ L1 Root Context: "Platform, not franchise. System-led, not sales-driven."</div>
+      </div>
+      <div class="lp-item highlighted" data-delay="100">
+        <div class="lp-level">3</div>
+        <div class="lp-name"><strong>The goals of the system</strong></div>
+        <div class="lp-wiom">→ L2 System Reset + L3 Primitives: Customer primacy > Partner viability > Design objectives</div>
+      </div>
+      <div class="lp-item highlighted" data-delay="150">
+        <div class="lp-level">4</div>
+        <div class="lp-name"><strong>The power to self-organize</strong> system structure</div>
+        <div class="lp-wiom">→ OSTF template: any team can draft new OS docs that plug into the hierarchy</div>
+      </div>
+      <div class="lp-item highlighted" data-delay="200">
+        <div class="lp-level">5</div>
+        <div class="lp-name"><strong>The rules of the system</strong> (incentives, constraints)</div>
+        <div class="lp-wiom">→ L3 Guards (F1–F4, E1–E3, S1–S3): binary constraints that cannot be overridden</div>
+      </div>
+      <div class="lp-item highlighted" data-delay="250">
+        <div class="lp-level">6</div>
+        <div class="lp-name"><strong>The structure of information flows</strong></div>
+        <div class="lp-wiom">→ #os-feedback loop: employee questions surface OS gaps → SD updates → system improves</div>
+      </div>
+      <div class="lp-item" data-delay="300">
+        <div class="lp-level">7</div>
+        <div class="lp-name">The gain around driving <strong>positive feedback loops</strong></div>
+        <div class="lp-wiom"></div>
+      </div>
+      <div class="lp-item highlighted" data-delay="350">
+        <div class="lp-level">8</div>
+        <div class="lp-name"><strong>Negative feedback loops</strong> relative to impacts they correct</div>
+        <div class="lp-wiom">→ Pattern-based enforcement (P6): weekly governance corrects drift before it compounds</div>
+      </div>
+      <div class="lp-item" data-delay="400">
+        <div class="lp-level">9</div>
+        <div class="lp-name">The lengths of <strong>delays</strong></div>
+        <div class="lp-wiom"></div>
+      </div>
+      <div class="lp-item" data-delay="450">
+        <div class="lp-level">10</div>
+        <div class="lp-name">The structure of <strong>material stocks and flows</strong></div>
+        <div class="lp-wiom"></div>
+      </div>
+      <div class="lp-item" data-delay="500">
+        <div class="lp-level">11</div>
+        <div class="lp-name">The sizes of <strong>buffers</strong></div>
+        <div class="lp-wiom"></div>
+      </div>
+      <div class="lp-item" data-delay="550">
+        <div class="lp-level">12</div>
+        <div class="lp-name"><strong>Constants, parameters, numbers</strong> (least leverage)</div>
+        <div class="lp-wiom"></div>
+      </div>
+    </div>
+    <p style="color:var(--text-dim);font-size:.85rem;margin-top:24px;text-align:center">Highlighted rows = where the Wiom OS architecture actively intervenes. We operate at Levels 1–6 and 8 — the highest leverage points in the system.</p>
+  </div>
+</section>
+
+<!-- Feedback Flywheel -->
+<section id="flywheel" style="background:var(--surface)">
+  <div class="container">
+    <div class="section-label">Self-Improving System</div>
+    <h2 class="section-title">The Feedback Flywheel</h2>
+    <p class="section-desc">The bot is not just a reference tool — it is the feedback engine that drives OS evolution. Every question either confirms the OS works or generates a signal for where it needs to grow.</p>
+
+    <div class="flywheel">
+      <div class="fw-step" data-delay="0">
+        <div class="fw-icon">💬</div>
+        <div class="fw-label">Employee Asks</div>
+        <div class="fw-desc">Question on Slack via DM or @mention</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step" data-delay="100">
+        <div class="fw-icon">🤖</div>
+        <div class="fw-label">Bot Answers</div>
+        <div class="fw-desc">From OS docs or derived from primitives</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step" data-delay="200">
+        <div class="fw-icon">🚩</div>
+        <div class="fw-label">Auto-Flag</div>
+        <div class="fw-desc">Edge case or high-stakes → posts to #os-feedback</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step" data-delay="300">
+        <div class="fw-icon">👁️</div>
+        <div class="fw-label">SD Reviews</div>
+        <div class="fw-desc">Weekly review of flagged items in Slack</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step" data-delay="400">
+        <div class="fw-icon">📝</div>
+        <div class="fw-label">OS Updated</div>
+        <div class="fw-desc">New or revised OS doc uploaded</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step" data-delay="500">
+        <div class="fw-icon">⚡</div>
+        <div class="fw-label">Bot Improves</div>
+        <div class="fw-desc">Answers better next time. Fewer flags = OS maturing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Document Library -->
+<section id="docs">
+  <div class="container">
+    <div class="section-label">Reference</div>
+    <h2 class="section-title">Complete Document Library</h2>
+    <p class="section-desc">All documents are available on <a href="https://drive.google.com/drive/folders/1xRS5fj5QFIB_ZRYZkJZlIoS8G0Af1fSK" target="_blank">Google Drive</a>, organized by layer.</p>
+
+    <div class="doc-grid">
+      <div class="doc-row"><div class="doc-id">L1.1</div><div class="doc-name">ROOT — Vision to Strategy</div><div class="doc-status live">Root</div></div>
+      <div class="doc-row"><div class="doc-id">L1.2</div><div class="doc-name">ROOT — Preamble (Model Truths, Rs.10 Filter, 5-Fold Test)</div><div class="doc-status live">Root</div></div>
+      <div class="doc-row"><div class="doc-id">L1.3</div><div class="doc-name">ROOT — Doctrines (Flywheel Execution Doctrine)</div><div class="doc-status live">Root</div></div>
+      <div class="doc-row"><div class="doc-id">L2.1</div><div class="doc-name">RESET — Systems Thinking Leverage Points (Donella Meadows)</div><div class="doc-status config">Reset</div></div>
+      <div class="doc-row"><div class="doc-id">L2.2</div><div class="doc-name">RESET — Push to Pull Context</div><div class="doc-status config">Reset</div></div>
+      <div class="doc-row"><div class="doc-id">L3.1</div><div class="doc-name">PARTNER — Partner 101 JTBD (22 LCO Interviews)</div><div class="doc-status live">Partner</div></div>
+      <div class="doc-row"><div class="doc-id">L3.2</div><div class="doc-name">PARTNER — Wiom Model Context (Uber/Airbnb Analogy)</div><div class="doc-status live">Partner</div></div>
+      <div class="doc-row"><div class="doc-id">L3.3</div><div class="doc-name">PARTNER — Partner as System Component</div><div class="doc-status live">Partner</div></div>
+      <div class="doc-row"><div class="doc-id">L3.4</div><div class="doc-name">PARTNER — Primitives Framework (10 Binary Constraints)</div><div class="doc-status live">Partner</div></div>
+      <div class="doc-row"><div class="doc-id">L3.5</div><div class="doc-name">PARTNER — Primitives Locked (P1–P11 Full Evaluation)</div><div class="doc-status live">Partner</div></div>
+      <div class="doc-row"><div class="doc-id">L4.1</div><div class="doc-name">ARCH — Introduction to OS (20 OS, Governance Rule)</div><div class="doc-status live">Arch</div></div>
+      <div class="doc-row"><div class="doc-id">L4.2</div><div class="doc-name">ARCH — Clusters (4 Clusters, Escalation Protocols)</div><div class="doc-status live">Arch</div></div>
+      <div class="doc-row"><div class="doc-id">L4.3</div><div class="doc-name">ARCH — OSTF Template v1 (12-Section Mandatory Format)</div><div class="doc-status live">Arch</div></div>
+      <div class="doc-row"><div class="doc-id">L5.05</div><div class="doc-name">OS — Customer Lifecycle — Continuity Support Layer v1</div><div class="doc-status live">Drafted ✓</div></div>
+      <div class="doc-row"><div class="doc-id">L5.17</div><div class="doc-name">OS — Exit OS v1 (Taxonomy, State Machine, Playbooks)</div><div class="doc-status live">Drafted ✓</div></div>
+      <div class="doc-row"><div class="doc-id">L6.1</div><div class="doc-name">CONFIG — System Prompt v1 (AI Decision Logic)</div><div class="doc-status config">Config</div></div>
+      <div class="doc-row"><div class="doc-id">L6.2</div><div class="doc-name">CONFIG — Slack Feedback Workflow v1</div><div class="doc-status config">Config</div></div>
+      <div class="doc-row" style="opacity:.5"><div class="doc-id" style="color:var(--accent3)">L5.01–L5.20</div><div class="doc-name">18 Operating Systems — Not Yet Drafted (derived from L1–L4)</div><div class="doc-status pending">Pending</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p style="margin-bottom:8px"><strong>Wiom OS Guide</strong> — CSP Operating System Reference</p>
+    <p>Built with Claude Sonnet · Hosted on <a href="https://drive.google.com/drive/folders/1xRS5fj5QFIB_ZRYZkJZlIoS8G0Af1fSK" target="_blank">Google Drive</a></p>
+    <p style="margin-top:16px;font-size:.75rem">Wiom · Democratizing Dreams — Rs.10 at a Time</p>
+  </div>
+</footer>
+
+<script>
+// Intersection Observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const delay = parseInt(entry.target.dataset.delay || '0');
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+        if (entry.target.classList.contains('flow-step')) {
+          entry.target.classList.add('active');
+        }
+      }, delay);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+// Observe all animatable elements
+document.querySelectorAll('.tree-layer, .flow-step, .lp-item, .fw-step, .fw-arrow').forEach(el => {
+  observer.observe(el);
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>
