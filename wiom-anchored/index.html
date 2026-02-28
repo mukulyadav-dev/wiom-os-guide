@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiom Anchored — Reset Roadmap to 31st March</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fafafa;
+    color: #1a1a2e;
+    line-height: 1.6;
+  }
+
+  .hero {
+    min-height: 55vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0eaff 50%, #fff0f5 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(232, 67, 147, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(108, 99, 255, 0.04) 0%, transparent 60%);
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-3%, 2%); }
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 720px; }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 20px;
+    border: 1px solid rgba(232, 67, 147, 0.3);
+    background: rgba(232, 67, 147, 0.06);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c0357b;
+    margin-bottom: 32px;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #e84393 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 18px;
+    color: #666;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .timeline-section {
+    padding: 60px 24px 100px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e84393;
+    margin-bottom: 48px;
+  }
+
+  .phase {
+    position: relative;
+    padding-left: 48px;
+    margin-bottom: 64px;
+  }
+
+  .phase::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: -64px;
+    width: 2px;
+    background: linear-gradient(to bottom, #e84393, rgba(108, 99, 255, 0.15));
+  }
+
+  .phase:last-child::before { bottom: 0; }
+
+  .phase-dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #e84393;
+    box-shadow: 0 0 16px rgba(232, 67, 147, 0.25);
+  }
+
+  .phase-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e84393;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .phase h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+  }
+
+  .phase-items { list-style: none; }
+
+  .phase-items li {
+    padding: 12px 20px;
+    background: #ffffff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #555;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .phase-items li:hover {
+    background: #fff5f9;
+    border-color: rgba(232, 67, 147, 0.2);
+    box-shadow: 0 2px 8px rgba(232, 67, 147, 0.08);
+  }
+
+  .phase-items li strong { color: #1a1a2e; }
+
+  .summary-section {
+    padding: 60px 24px 100px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+
+  .summary-table th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #999;
+    padding: 0 20px 16px;
+  }
+
+  .summary-table td {
+    padding: 16px 20px;
+    background: #ffffff;
+    font-size: 15px;
+    color: #555;
+  }
+
+  .summary-table td:first-child {
+    border-radius: 10px 0 0 10px;
+    font-weight: 600;
+    color: #e84393;
+    white-space: nowrap;
+    width: 180px;
+  }
+
+  .summary-table td:last-child {
+    border-radius: 0 10px 10px 0;
+  }
+
+  .summary-table tr:hover td {
+    background: #fff5f9;
+  }
+
+  .outcome {
+    padding: 80px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .outcome-card {
+    background: linear-gradient(135deg, #fff5f9 0%, #f5f0ff 100%);
+    border: 1px solid rgba(232, 67, 147, 0.15);
+    border-radius: 20px;
+    padding: 48px;
+  }
+
+  .outcome-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+  }
+
+  .outcome-card .subtitle {
+    font-size: 15px;
+    color: #e84393;
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+
+  .outcome-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .outcome-list li {
+    padding: 14px 18px;
+    background: #ffffff;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #555;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .outcome-list li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    min-width: 6px;
+    border-radius: 50%;
+    background: #e84393;
+    margin-top: 7px;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 40px 24px;
+    border-top: 1px solid #eee;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .footer p { font-size: 13px; color: #bbb; }
+
+  @media (max-width: 640px) {
+    .outcome-list { grid-template-columns: 1fr; }
+    .outcome-card { padding: 32px 24px; }
+    .hero { padding: 60px 20px; min-height: 50vh; }
+    .summary-table td:first-child { width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="badge">Internal — Leadership Review</div>
+    <h1>Wiom Anchored</h1>
+    <p>Reset roadmap to 31st March — defining new ways of working and business positioning for our CSP ecosystem.</p>
+  </div>
+</section>
+
+<section class="timeline-section">
+  <div class="section-title">Phased Execution</div>
+
+  <div class="phase">
+    <div class="phase-dot"></div>
+    <div class="phase-date">By 5th March</div>
+    <h3>Phase 1 — Partner Migration</h3>
+    <ul class="phase-items">
+      <li><strong>100% live partners</strong> migrated to new systemic ways of working</li>
+      <li>Process alignment, system onboarding, operational readiness</li>
+      <li><strong>Exit OS started</strong> for non-aligned partners</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-dot"></div>
+    <div class="phase-date">5th – 10th March</div>
+    <h3>Phase 2 — Legacy Customer Migration</h3>
+    <ul class="phase-items">
+      <li>Begin migrating <strong>existing customer base</strong> to the new PAYG offering</li>
+      <li>Customer communication, plan transition, support readiness</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-dot"></div>
+    <div class="phase-date">By 15th March</div>
+    <h3>Phase 3 — Growth Activation & CSP Strategy</h3>
+    <ul class="phase-items">
+      <li><strong>Performance marketing campaigns</strong> go live to drive PAYG growth</li>
+      <li><strong>New CSP offering finalised</strong> — lock in value proposition for CSPs</li>
+      <li><strong>Detailed OS finalisation</strong> — clear operational guide for CSP positioning across all clusters</li>
+    </ul>
+  </div>
+
+  <div class="phase">
+    <div class="phase-dot"></div>
+    <div class="phase-date">By 30th March</div>
+    <h3>Phase 4 — Scale & Expand</h3>
+    <ul class="phase-items">
+      <li><strong>CSP positioning goes live</strong> — new app rolled out</li>
+      <li><strong>New city openings</strong> begin for the PAYG customer offering</li>
+    </ul>
+  </div>
+</section>
+
+<section class="summary-section">
+  <div class="section-title">At a Glance</div>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Milestone</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>5th Mar</td><td>100% live partners migrated to new ways of working + Exit OS for non-aligned partners</td></tr>
+      <tr><td>5th – 10th Mar</td><td>Legacy customer migration to PAYG begins</td></tr>
+      <tr><td>15th Mar</td><td>Performance marketing campaigns launch</td></tr>
+      <tr><td>15th Mar</td><td>New CSP offering + OS finalisation complete</td></tr>
+      <tr><td>30th Mar</td><td>CSP positioning goes live — new app rolled out</td></tr>
+      <tr><td>30th Mar</td><td>New city openings for PAYG</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="outcome">
+  <div class="outcome-card">
+    <h2>Key Outcome — 31st March</h2>
+    <div class="subtitle">"Wiom Anchored" — A fully repositioned platform</div>
+    <ul class="outcome-list">
+      <li>New customer offering (PAYG) live and scaling</li>
+      <li>Clear CSP positioning with operational playbook</li>
+      <li>Growth engine activated via performance marketing</li>
+      <li>Expansion into new geographies underway</li>
+    </ul>
+  </div>
+</section>
+
+<div class="footer">
+  <p>Draft for leadership review — 28th February 2025 — Wiom</p>
+</div>
+
+</body>
+</html>
